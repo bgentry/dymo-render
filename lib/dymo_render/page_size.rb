@@ -23,6 +23,13 @@ class DymoRender
         imageable_area: [2.88, 4.32, 159.12, 85.68],
         slug: "30334_2-1_4_in_x_1-1_4_in",
       },
+      {
+        id: "Shipping",
+        name: "30256 Shipping",
+        dimension: [166.5, 288.0],
+        imageable_area: [0, 0, 166.5, 288,0],
+        slug: "30256_shipping"
+      }
     ].freeze
 
     attr_reader :id, :name, :dimension, :imageable_area, :slug
