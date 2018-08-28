@@ -82,7 +82,6 @@ class DymoRender
     nil # not found
   end
 
-  private
 
   def pdf_margin
     @pdf_margin ||= landscape? ? page_size.pdf_margin_landscape : page_size.pdf_margin
@@ -95,6 +94,8 @@ class DymoRender
   def pdf_width
     landscape? ? page_size.dimension[1] : page_size.dimension[0]
   end
+
+  private
 
   def build_pdf
     @pdf = Prawn::Document.new(
