@@ -27,11 +27,12 @@ class DymoRender
 
   attr_reader :doc, :font_dirs, :params, :pdf, :qr_level
 
-  def initialize(xml:, font_dirs: FONT_DIRS, params: {}, qr_level: nil)
+  def initialize(xml:, font_dirs: FONT_DIRS, params: {}, qr_level: nil, options: {})
     @xml = xml
     @font_dirs = font_dirs
     @params = params
     @qr_level = qr_level
+    @options = options
     @doc = Nokogiri::XML(xml)
   end
 
@@ -69,19 +70,25 @@ class DymoRender
     end
   end
 
-  def self.font_file_for_family(font_dirs, family)
-    extensions = [".ttf", ".dfont", ".ttc"]
+  def font_file_for_family(family)
+    extensions = %w[.ttf .dfont .ttc]
     names = extensions.map { |ext| [family, ext].join }
 
-    font_dirs.each do |dir|
+    @font_dirs.each do |dir|
       names.each do |filename|
         file = File.join(dir, filename)
-        return file if File.exists?(file)
+        return file if File.exist?(file)
       end
     end
-    nil # not found
-  end
 
+    # use fallback font if option is set
+    if @options[:fallback_font] && family != @options[:fallback_font]
+      return font_file_for_family(@options[:fallback_font])
+    end
+
+    # font not found
+    nil
+  end
 
   def pdf_margin
     @pdf_margin ||= landscape? ? page_size.pdf_margin_landscape : page_size.pdf_margin
@@ -147,7 +154,7 @@ class DymoRender
     valign = valign_from_text_object(text_object)
     begin
       pdf.fill_color color
-      font_file = self.class.font_file_for_family(font_dirs, font_family)
+      font_file = font_file_for_family(font_family)
       pdf.font(font_file || raise("missing font #{font_family}"))
       # horizontal padding of 1 point
       x += 1
@@ -304,7 +311,7 @@ class DymoRender
       valign = VALIGNS[text_position]
 
       pdf.fill_color color
-      font_file = self.class.font_file_for_family(font_dirs, font_family)
+      font_file = font_file_for_family(font_family)
       pdf.font(font_file || raise("missing font #{font_family}"))
       # horizontal padding of 1 point
       x += 1
